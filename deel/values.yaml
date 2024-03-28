@@ -1,0 +1,20 @@
+replicaCount: 3
+image:
+  repository: great15/deel
+  tag: latest
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+  limits:
+    memory: "128Mi"
+    cpu: "500m"
+ingress:
+  enabled: true
+  host: deel-app.local
+redis_host: redis-master.redis.svc.cluster.local
+redis_password: MjByV1RWc1NZYg==
+service:
+  type: ClusterIP
+  port: 80
+replicaCount: 3
