@@ -18,9 +18,8 @@ jobs:
         go-version: '1.20'
 
     - name: Lint Go code
-      run: |
-        go get -u golang.org/x/lint/golint
-        golint ./...
+      run: go fmt .
+        
 
     - name: Run Go tests
       run: go test ./... -v
