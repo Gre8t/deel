@@ -87,8 +87,12 @@ start_minikube() {
 }
 install_cert_manager() {
   echo "Installing Cert Manager..."
-  kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yml
-  kubectl wait --for=condition=available --timeout=300s deployment -l 'app.kubernetes.io/component=controller,app.kubernetes.io/instance=cert-manager' -n cert-manager
+  kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+}
+install_argo_cd(){
+  echo "Installing Argo-CD..."
+  kubectl create ns argo-cd
+  helm install argo-cd oci://registry-1.docker.io/bitnamicharts/argo-cd -n argo-cd
 }
 install_redis() {
   check_namespace $redis_namespace
@@ -174,6 +178,8 @@ install_redis
 update_redis_helm_values "redis-master"
 create_minikube_tunnel 
 install_nginx
+install_cert_manager
+install_argo_cd
 sleep 100
 deploy_helm_chart
 update_hosts_file
