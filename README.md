@@ -5,7 +5,7 @@ The `script.sh` is your go-to for launching a Minikube-based Kubernetes environm
 
 ### Need to Know
 - **OS Compatibility**: Works best on Linux (Ubuntu 22.04 is a charm!). macOS users, be cautious – it gave my ThinkPad a tough time so I didn't fully test it on a mac.
-- **User Permissions**: Run it as a normal user, but make sure you've got sudo powers.
+- **User Permissions**: Run it as a normal user, but make sure you've got sudo access.
 - **Tools on Deck**: It'll get you Docker, kubectl, Minikube, helm. 
 
 ### How to Run
@@ -37,4 +37,4 @@ As the saying goes, being early in the market beats waiting for perfection. I wo
 * add monitoring and alerting for application. Also set up liveness and readiness check
 * set up container runtime security - either implement falco, and some capabilities and seccomp stuff.
 * create infrastructure using terraform for gcp quick set up
-* update readme with the following topics - gcp, essence of script, cicd and etc.
+* update readme with the following topics - gcp, essence of script, cicd - argocd - and etc.
