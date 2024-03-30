@@ -25,7 +25,7 @@ Running this with root might mix up Minikube and kubectl's home settings and mud
 - Open policy agent to guard deployment access.
 - Image policy webhook, network policies, and container runtime security to container access.
 
-As the saying goes, being early in the market beats waiting for perfection. I would get this done at the 3rd stage of the interview.
+As the saying goes, being early in the market beats waiting for perfection. I would get this before the interview stage with the hiring manager. Also, if you would like to indulge me I would write a blog about the challenges i have faced while trying to add more features to this and also how I overcame them - I kept pulling my hair at falco 😉
 
 #### TODO:
 * make the app run using goroutine
