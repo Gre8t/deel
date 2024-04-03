@@ -73,17 +73,22 @@ install_docker(){
   exit 0
 
 }
+install_virtualbox(){
+  sudo apt update
+  sudo apt install virtualbox
+}
 install_prerequisites() {
     sudo -v
     command_exists kubectl && echo "kubectl is already installed." || install_kubectl
     command_exists docker && echo "docker is already installed" || install_docker
     command_exists minikube && echo "minikube is already installed" || install_minikube
     command_exists helm && echo "Helm is already installed." || install_helm
-    echo "Installation of Docker, kubectl, helm, and Minikube is complete."
+    command_exists virtualbox && echo "Virtualbox is already installed." || install_virtualbox
+    echo "Installation of Docker, kubectl, helm, Minikube and Virtualbox is complete."
 }
 start_minikube() {
   echo "Starting Minikube cluster..."
-  minikube start -p $minikube_profile --force
+  minikube start -p $minikube_profile --driver=virtualbox --force
 }
 install_cert_manager() {
   echo "Installing Cert Manager..."
@@ -109,6 +114,16 @@ install_nginx() {
   helm install my-ingress-nginx ingress-nginx/ingress-nginx -n nginx >/dev/null 2>&1 
   echo "Nginx Controller installed!"
 } 
+install_falco(){
+  helm install falco falcosecurity/falco \
+    --create-namespace \
+    --namespace falco \
+    --set falco.grpc.enabled=true \
+    --set falco.grpc_output.enabled=true
+}
+install_prometheus(){
+
+}
 check_namespace() {
   local namespace="$1"
   kubectl get namespace "$namespace" >/dev/null 2>&1 && echo "Namespace $namespace already exists." || kubectl create namespace "$namespace"
@@ -130,6 +145,9 @@ install_helm() {
       exit 1
       ;;
   esac
+}
+create_certificate(){
+
 }
 update_redis_helm_values() {
   local service_name="$1"
@@ -175,10 +193,13 @@ update_hosts_file() {
 install_prerequisites
 start_minikube
 install_redis
+install_falco
+install_prometheus
 update_redis_helm_values "redis-master"
 create_minikube_tunnel 
 install_nginx
 install_cert_manager
+create_certificate
 install_argo_cd
 sleep 100
 deploy_helm_chart
