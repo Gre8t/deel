@@ -43,36 +43,36 @@ install_minikube() {
     esac
   
 }
-install_docker(){
-  echo "Installing Docker..."
-   case "$(uname -s)" in
-        Linux*)
-            echo "Installing Docker..."
-            curl -fsSL https://get.docker.com -o get-docker.sh
-            sh get-docker.sh
-            sudo systemctl start docker
-            sudo systemctl enable docker
-            usermod -aG docker $USER
+# install_docker(){
+#   echo "Installing Docker..."
+#    case "$(uname -s)" in
+#         Linux*)
+#             echo "Installing Docker..."
+#             curl -fsSL https://get.docker.com -o get-docker.sh
+#             sh get-docker.sh
+#             sudo systemctl start docker
+#             sudo systemctl enable docker
+#             usermod -aG docker $USER
 
-            ;;
-        Darwin*)
-            if ! command -v brew >/dev/null 2>&1; then
-                echo "Installing Homebrew..."
-                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            fi
+#             ;;
+#         Darwin*)
+#             if ! command -v brew >/dev/null 2>&1; then
+#                 echo "Installing Homebrew..."
+#                 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#             fi
 
-            echo "Installing Docker for macOS..."
-            brew install --cask docker
-            ;;
-        *)
-            echo "Unsupported operating system."
-            exit 1
-            ;;
-    esac
-  echo "Please log out and log back in for group changes to take effect."
-  exit 0
+#             echo "Installing Docker for macOS..."
+#             brew install --cask docker
+#             ;;
+#         *)
+#             echo "Unsupported operating system."
+#             exit 1
+#             ;;
+#     esac
+#   echo "Please log out and log back in for group changes to take effect."
+#   exit 0
 
-}
+# }
 install_virtualbox(){
   sudo apt update
   sudo apt install virtualbox
@@ -80,7 +80,7 @@ install_virtualbox(){
 install_prerequisites() {
     sudo -v
     command_exists kubectl && echo "kubectl is already installed." || install_kubectl
-    command_exists docker && echo "docker is already installed" || install_docker
+    # command_exists docker && echo "docker is already installed" || install_docker
     command_exists minikube && echo "minikube is already installed" || install_minikube
     command_exists helm && echo "Helm is already installed." || install_helm
     command_exists virtualbox && echo "Virtualbox is already installed." || install_virtualbox
