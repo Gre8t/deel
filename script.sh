@@ -107,13 +107,23 @@ install_redis() {
   helm install redis oci://registry-1.docker.io/bitnamicharts/redis -n  $redis_namespace >/dev/null 2>&1 
   echo "Redis Installed!"
 }
-install_nginx() {
-  check_namespace nginx
-  helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx >/dev/null 2>&1 
-  helm repo update >/dev/null 2>&1 
-  helm install my-ingress-nginx ingress-nginx/ingress-nginx -n nginx >/dev/null 2>&1 
-  echo "Nginx Controller installed!"
-} 
+# install_nginx() {
+#   check_namespace nginx
+#   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx >/dev/null 2>&1 
+#   helm repo update >/dev/null 2>&1 
+#   helm install my-ingress-nginx ingress-nginx/ingress-nginx -n nginx >/dev/null 2>&1 
+#   echo "Nginx Controller installed!"
+# } 
+install_ngrok(){
+  helm repo add ngrok https://ngrok.github.io/kubernetes-ingress-controller
+  helm repo update
+  helm install ngrok-ingress-controller ngrok/kubernetes-ingress-controller \
+  --namespace ngrok-ingress-controller \
+  --create-namespace \
+  --set credentials.apiKey=$NGROK_API_KEY \
+  --set credentials.authtoken=$NGROK_AUTHTOKEN
+
+}
 install_falco(){
   helm install falco falcosecurity/falco \
     --create-namespace \
@@ -146,9 +156,9 @@ install_helm() {
       ;;
   esac
 }
-create_certificate(){
-
-}
+# create_certificate(){
+#  kubectl create -f ./manifest.yml
+# }
 update_redis_helm_values() {
   local service_name="$1"
   local redis_dns="${service_name}.${redis_namespace}.svc.cluster.local"
@@ -197,7 +207,8 @@ install_falco
 install_prometheus
 update_redis_helm_values "redis-master"
 create_minikube_tunnel 
-install_nginx
+#install_nginx
+install_argo_cd
 install_cert_manager
 create_certificate
 install_argo_cd
