@@ -209,9 +209,9 @@ update_redis_helm_values "redis-master"
 create_minikube_tunnel 
 #install_nginx
 install_argo_cd
-install_cert_manager
-create_certificate
-install_argo_cd
+#install_cert_manager
+#create_certificate
+set_up_argo_cd
 sleep 100
 deploy_helm_chart
 update_hosts_file
