@@ -3,6 +3,8 @@ set -eu
 
 minikube_profile=deel
 redis_namespace=redis
+NGROK_API_KEY=a
+NGROK_AUTHTOKEN=a
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -75,7 +77,7 @@ install_minikube() {
 # }
 install_virtualbox(){
   sudo apt update
-  sudo apt install virtualbox
+  sudo apt install virtualbox -y
 }
 install_prerequisites() {
     sudo -v
@@ -90,21 +92,20 @@ start_minikube() {
   echo "Starting Minikube cluster..."
   minikube start -p $minikube_profile --driver=virtualbox --cpus=3 --memory=4gb --force --iso-url=https://storage.googleapis.com/minikube/iso/minikube-v1.32.0-amd64.iso
 }
-install_cert_manager() {
-  echo "Installing Cert Manager..."
-  kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
-}
+# install_cert_manager() {
+#   echo "Installing Cert Manager..."
+#   kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
+# }
 install_argo_cd(){
   echo "Installing Argo-CD..."
-  kubectl create ns argo-cd
-  helm install argo-cd oci://registry-1.docker.io/bitnamicharts/argo-cd -n argo-cd
+  helm install argo-cd oci://registry-1.docker.io/bitnamicharts/argo-cd -n argo-cd --create-namespace --namespace argo-cd
 }
+# set_up_argo_cd(){
+
+# }
 install_redis() {
-  check_namespace $redis_namespace
   echo "Installing Redis..."
-  helm repo add bitnami https://charts.bitnami.com/bitnami >/dev/null 2>&1 
-  helm repo update >/dev/null 2>&1 
-  helm install redis oci://registry-1.docker.io/bitnamicharts/redis -n  $redis_namespace >/dev/null 2>&1 
+  helm install --create-namespace --namespace redis redis oci://registry-1.docker.io/bitnamicharts/redis -n  $redis_namespace >/dev/null 2>&1 
   echo "Redis Installed!"
 }
 # install_nginx() {
@@ -125,19 +126,25 @@ install_ngrok(){
 
 }
 install_falco(){
+  helm repo add falcosecurity https://falcosecurity.github.io/charts
+  helm repo update
   helm install falco falcosecurity/falco \
     --create-namespace \
     --namespace falco \
     --set falco.grpc.enabled=true \
     --set falco.grpc_output.enabled=true
-}
-install_prometheus(){
+  helm install falco-exporter falcosecurity/falco-exporter -n falco
 
 }
-check_namespace() {
-  local namespace="$1"
-  kubectl get namespace "$namespace" >/dev/null 2>&1 && echo "Namespace $namespace already exists." || kubectl create namespace "$namespace"
+install_prometheus(){
+ helm repo add bitnami https://charts.bitnami.com/bitnami
+ helm repo update
+ helm install --create-namespace --namespace promethues prometheus bitnami/kube-prometheus
 }
+# check_namespace() {
+#   local namespace="$1"
+#   kubectl get namespace "$namespace" >/dev/null 2>&1 && echo "Namespace $namespace already exists." || kubectl create namespace "$namespace"
+# }
 install_helm() {
   echo "Installing Helm..."
   case "$(uname -s)" in
@@ -170,34 +177,32 @@ update_redis_helm_values() {
   awk -v redis_password="$redis_password" '/redis_password:/ {$2=redis_password} 1' deel/values.yaml > tmp.yaml && mv tmp.yaml deel/values.yaml
 }
 deploy_helm_chart() {
-  namespace=staging
-  check_namespace $namespace
-  helm install deel ./deel -n $namespace >/dev/null 2>&1 
+  helm install --create-namespace --namespace staging deel ./deel -n $namespace >/dev/null 2>&1 
   echo "deel installed!"
 }
-create_minikube_tunnel() {
-  echo "Creating minikube tunnel"
-  minikube tunnel -p $minikube_profile >/dev/null 2>&1 & disown
-}
-update_hosts_file() {
-  sudo -v
-  echo "Waiting to get ip address of deel-app.local" 
-  sleep 150
-  local domain="deel-app.local"
-  local ip=$(kubectl get ingress deel-ingress -n staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  if grep -q " $domain" /etc/hosts; then
-    # remove entry
-    sudo sed -i "/ $domain/d" /etc/hosts
-    echo "Entry removed for domain: $domain"
-    echo "$ip $domain" | sudo tee -a /etc/hosts > /dev/null
-    echo "Entry added: $ip $domain"
-  else
-    echo "$ip $domain" | sudo tee -a /etc/hosts > /dev/null
-    echo "Entry added: $ip $domain"
-  fi
+# create_minikube_tunnel() {
+#   echo "Creating minikube tunnel"
+#   minikube tunnel -p $minikube_profile >/dev/null 2>&1 & disown
+# }
+# update_hosts_file() {
+#   sudo -v
+#   echo "Waiting to get ip address of deel-app.local" 
+#   sleep 150
+#   local domain="deel-app.local"
+#   local ip=$(kubectl get ingress deel-ingress -n staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+#   if grep -q " $domain" /etc/hosts; then
+#     # remove entry
+#     sudo sed -i "/ $domain/d" /etc/hosts
+#     echo "Entry removed for domain: $domain"
+#     echo "$ip $domain" | sudo tee -a /etc/hosts > /dev/null
+#     echo "Entry added: $ip $domain"
+#   else
+#     echo "$ip $domain" | sudo tee -a /etc/hosts > /dev/null
+#     echo "Entry added: $ip $domain"
+#   fi
 
-  echo -e "Now you can visit \e[34mhttp://deel-app.local\e[0m on your local browser"
-}
+#   echo -e "Now you can visit \e[34mhttp://deel-app.local\e[0m on your local browser"
+# }
 
 # Main script execution
 install_prerequisites
@@ -205,14 +210,15 @@ start_minikube
 install_redis
 install_falco
 install_prometheus
+install_ngrok
 update_redis_helm_values "redis-master"
-create_minikube_tunnel 
+#create_minikube_tunnel 
 #install_nginx
 install_argo_cd
 #install_cert_manager
 #create_certificate
-set_up_argo_cd
+#set_up_argo_cd
 sleep 100
 deploy_helm_chart
-update_hosts_file
+#update_hosts_file
 echo "Script execution completed."
