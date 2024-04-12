@@ -88,7 +88,7 @@ install_prerequisites() {
 }
 start_minikube() {
   echo "Starting Minikube cluster..."
-  minikube start -p $minikube_profile --driver=virtualbox --force
+  minikube start -p $minikube_profile --driver=virtualbox --cpus=3 --memory=4gb --force --iso-url=https://storage.googleapis.com/minikube/iso/minikube-v1.32.0-amd64.iso
 }
 install_cert_manager() {
   echo "Installing Cert Manager..."
