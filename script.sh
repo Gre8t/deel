@@ -45,36 +45,6 @@ install_minikube() {
     esac
   
 }
-# install_docker(){
-#   echo "Installing Docker..."
-#    case "$(uname -s)" in
-#         Linux*)
-#             echo "Installing Docker..."
-#             curl -fsSL https://get.docker.com -o get-docker.sh
-#             sh get-docker.sh
-#             sudo systemctl start docker
-#             sudo systemctl enable docker
-#             usermod -aG docker $USER
-
-#             ;;
-#         Darwin*)
-#             if ! command -v brew >/dev/null 2>&1; then
-#                 echo "Installing Homebrew..."
-#                 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-#             fi
-
-#             echo "Installing Docker for macOS..."
-#             brew install --cask docker
-#             ;;
-#         *)
-#             echo "Unsupported operating system."
-#             exit 1
-#             ;;
-#     esac
-#   echo "Please log out and log back in for group changes to take effect."
-#   exit 0
-
-# }
 install_virtualbox(){
   sudo apt update
   sudo apt install virtualbox -y
@@ -92,29 +62,15 @@ start_minikube() {
   echo "Starting Minikube cluster..."
   minikube start -p $minikube_profile --driver=virtualbox --cpus=3 --memory=4gb --force --iso-url=https://storage.googleapis.com/minikube/iso/minikube-v1.32.0-amd64.iso
 }
-# install_cert_manager() {
-#   echo "Installing Cert Manager..."
-#   kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
-# }
 install_argo_cd(){
   echo "Installing Argo-CD..."
   helm install argo-cd oci://registry-1.docker.io/bitnamicharts/argo-cd -n argo-cd --create-namespace --namespace argo-cd
 }
-# set_up_argo_cd(){
-
-# }
 install_redis() {
   echo "Installing Redis..."
   helm install --create-namespace --namespace redis redis oci://registry-1.docker.io/bitnamicharts/redis -n  $redis_namespace >/dev/null 2>&1 
   echo "Redis Installed!"
 }
-# install_nginx() {
-#   check_namespace nginx
-#   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx >/dev/null 2>&1 
-#   helm repo update >/dev/null 2>&1 
-#   helm install my-ingress-nginx ingress-nginx/ingress-nginx -n nginx >/dev/null 2>&1 
-#   echo "Nginx Controller installed!"
-# } 
 install_ngrok(){
   helm repo add ngrok https://ngrok.github.io/kubernetes-ingress-controller
   helm repo update
@@ -141,10 +97,6 @@ install_prometheus(){
  helm repo update
  helm install --create-namespace --namespace promethues prometheus bitnami/kube-prometheus
 }
-# check_namespace() {
-#   local namespace="$1"
-#   kubectl get namespace "$namespace" >/dev/null 2>&1 && echo "Namespace $namespace already exists." || kubectl create namespace "$namespace"
-# }
 install_helm() {
   echo "Installing Helm..."
   case "$(uname -s)" in
@@ -163,9 +115,6 @@ install_helm() {
       ;;
   esac
 }
-# create_certificate(){
-#  kubectl create -f ./manifest.yml
-# }
 update_redis_helm_values() {
   local service_name="$1"
   local redis_dns="${service_name}.${redis_namespace}.svc.cluster.local"
@@ -180,31 +129,7 @@ deploy_helm_chart() {
   helm install --create-namespace --namespace staging deel ./deel -n $namespace >/dev/null 2>&1 
   echo "deel installed!"
 }
-# create_minikube_tunnel() {
-#   echo "Creating minikube tunnel"
-#   minikube tunnel -p $minikube_profile >/dev/null 2>&1 & disown
-# }
-# update_hosts_file() {
-#   sudo -v
-#   echo "Waiting to get ip address of deel-app.local" 
-#   sleep 150
-#   local domain="deel-app.local"
-#   local ip=$(kubectl get ingress deel-ingress -n staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-#   if grep -q " $domain" /etc/hosts; then
-#     # remove entry
-#     sudo sed -i "/ $domain/d" /etc/hosts
-#     echo "Entry removed for domain: $domain"
-#     echo "$ip $domain" | sudo tee -a /etc/hosts > /dev/null
-#     echo "Entry added: $ip $domain"
-#   else
-#     echo "$ip $domain" | sudo tee -a /etc/hosts > /dev/null
-#     echo "Entry added: $ip $domain"
-#   fi
 
-#   echo -e "Now you can visit \e[34mhttp://deel-app.local\e[0m on your local browser"
-# }
-
-# Main script execution
 install_prerequisites
 start_minikube
 install_redis
@@ -212,13 +137,7 @@ install_falco
 install_prometheus
 install_ngrok
 update_redis_helm_values "redis-master"
-#create_minikube_tunnel 
-#install_nginx
 install_argo_cd
-#install_cert_manager
-#create_certificate
-#set_up_argo_cd
 sleep 100
 deploy_helm_chart
-#update_hosts_file
 echo "Script execution completed."
