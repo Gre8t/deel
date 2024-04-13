@@ -1,22 +1,52 @@
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Service
+apiVersion: v1
 metadata:
-  name: selfsigned-issuer
+  name: argo-cd-external-service
+  namespace: staging
 spec:
-  selfSigned: {}
+  type: ExternalName
+  externalName: argo-cd-server.argo-cd.svc.cluster.local
 
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: deel-app-local
-  namespace: nginx
+  labels:
+    app: cloudflared
+  name: cloudflared-deployment
+  namespace: staging
 spec:
-  secretName: deel-app-local-tls
-  issuerRef:
-    name: selfsigned-issuer
-    kind: ClusterIssuer
-  commonName: 'deel-app.local'
-  dnsNames:
-  - 'deel-app.local'
+  replicas: 2
+  selector:
+    matchLabels:
+      pod: cloudflared
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        pod: cloudflared
+    spec:
+      containers:
+      - command:
+        - cloudflared
+        - tunnel
+        # In a k8s environment, the metrics server needs to listen outside the pod it runs on.
+        # The address 0.0.0.0:2000 allows any pod in the namespace.
+        - --metrics
+        - 0.0.0.0:2000
+        - run
+        args:
+        - --token
+        - eyJhIjoiMjY0YWJiZmVmMDU5N2VkZTYyNDkwNzFjOTA2YzE4NzUiLCJ0IjoiMTk5MGM4MWMtOWFkNS00NGFkLTlhZTYtMzViYWQ0NDk0OWRlIiwicyI6Ik1qWmlZbVpsWTJZdFlXSXdNUzAwTm1KbUxXSTVORFV0WXpGaU1ERXhNelpsTmpBeSJ9
+        image: cloudflare/cloudflared:latest
+        name: cloudflared
+        livenessProbe:
+          httpGet:
+          # Cloudflared has a /ready endpoint which returns 200 if and only if
+          # it has an active connection to the edge.
+            path: /ready
+            port: 2000
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
 
