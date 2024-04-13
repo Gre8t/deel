@@ -121,13 +121,11 @@ deploy_helm_chart() {
   echo "deel installed!"
 }
 get_argocd_password(){
-  echo "sleeping for 5 minutes to get everything ready"
+  echo -e "sleeping for 5 minutes to get everything ready...\n"
   sleep 300
-  echo "woken up!"
-  echo "Visit http://ci.greatnessdomain.xyz and use the following login credentials:
-  Username: admin
-  Password: $(kubectl get secret -n argo-cd argocd-secret -o jsonpath="{.data.clearPassword}" | base64 -d)"
-  echo "if link is not live, wait an additional 5 mins"
+  echo -e "woken up! \n"
+  echo -e "Visit http://ci.greatnessdomain.xyz and use the following login credentials: \nUsername: admin \nPassword: $(kubectl get secret -n argo-cd argocd-secret -o jsonpath="{.data.clearPassword}" | base64 -d)"
+  echo -e "if link is not live, wait an additional 5 mins...\n"
 }
 
 install_prerequisites
@@ -140,4 +138,5 @@ install_argo_cd
 deploy_helm_chart
 install_cloudflare_tunnel
 get_argocd_password
+echo -e "Visit http://deel.greatnessdomain.xyz to see the deel application running.\n\n"
 echo "Script execution completed."
