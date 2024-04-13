@@ -71,15 +71,8 @@ install_redis() {
   helm install --create-namespace --namespace redis redis oci://registry-1.docker.io/bitnamicharts/redis -n  $redis_namespace >/dev/null 2>&1 
   echo "Redis Installed!"
 }
-install_ngrok(){
-  helm repo add ngrok https://ngrok.github.io/kubernetes-ingress-controller
-  helm repo update
-  helm install ngrok-ingress-controller ngrok/kubernetes-ingress-controller \
-  --namespace ngrok-ingress-controller \
-  --create-namespace \
-  --set credentials.apiKey=$NGROK_API_KEY \
-  --set credentials.authtoken=$NGROK_AUTHTOKEN
-
+install_cloudflare_tunnel() {
+ kubectl create -f ./manifest.yaml
 }
 install_falco(){
   helm repo add falcosecurity https://falcosecurity.github.io/charts
