@@ -62,7 +62,7 @@ start_minikube() {
 }
 install_argo_cd(){
   echo "Installing Argo-CD..."
-  helm install argo-cd oci://registry-1.docker.io/bitnamicharts/argo-cd -n argo-cd --create-namespace --namespace argo-cd
+  helm install argo-cd oci://registry-1.docker.io/bitnamicharts/argo-cd -n argo-cd --create-namespace --namespace argo-cd --set server.extraArgs[0]="--insecure"
 }
 install_redis() {
   echo "Installing Redis..."
