@@ -3,8 +3,6 @@ set -eu
 
 minikube_profile=deel
 redis_namespace=redis
-NGROK_API_KEY=a
-NGROK_AUTHTOKEN=a
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -60,7 +58,7 @@ install_prerequisites() {
 }
 start_minikube() {
   echo "Starting Minikube cluster..."
-  minikube start -p $minikube_profile --driver=virtualbox --cpus=3 --memory=4gb --force --iso-url=https://storage.googleapis.com/minikube/iso/minikube-v1.32.0-amd64.iso
+  minikube start -p $minikube_profile --driver=virtualbox --cpus=4 --memory=4gb --force --iso-url=https://storage.googleapis.com/minikube/iso/minikube-v1.32.0-amd64.iso
 }
 install_argo_cd(){
   echo "Installing Argo-CD..."
@@ -88,7 +86,7 @@ install_falco(){
 install_prometheus(){
  helm repo add bitnami https://charts.bitnami.com/bitnami
  helm repo update
- helm install --create-namespace --namespace promethues prometheus bitnami/kube-prometheus
+ helm install --create-namespace --namespace prometheus prometheus bitnami/kube-prometheus
 }
 install_helm() {
   echo "Installing Helm..."
@@ -119,7 +117,7 @@ update_redis_helm_values() {
   awk -v redis_password="$redis_password" '/redis_password:/ {$2=redis_password} 1' deel/values.yaml > tmp.yaml && mv tmp.yaml deel/values.yaml
 }
 deploy_helm_chart() {
-  helm install --create-namespace --namespace staging deel ./deel -n $namespace >/dev/null 2>&1 
+  helm install --create-namespace --namespace staging deel ./deel >/dev/null 2>&1 
   echo "deel installed!"
 }
 
@@ -128,9 +126,8 @@ start_minikube
 install_redis
 install_falco
 install_prometheus
-install_ngrok
 update_redis_helm_values "redis-master"
 install_argo_cd
-sleep 100
 deploy_helm_chart
+install_cloudflare_tunnel
 echo "Script execution completed."
