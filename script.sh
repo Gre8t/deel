@@ -70,7 +70,7 @@ install_redis() {
   echo "Redis Installed!"
 }
 install_cloudflare_tunnel() {
- kubectl create -f ./manifest.yaml
+ kubectl create -f ./manifest.yml
 }
 install_falco(){
   helm repo add falcosecurity https://falcosecurity.github.io/charts
@@ -120,6 +120,15 @@ deploy_helm_chart() {
   helm install --create-namespace --namespace staging deel ./deel >/dev/null 2>&1 
   echo "deel installed!"
 }
+get_argocd_password(){
+  echo "sleeping for 5 minutes to get everything ready"
+  sleep 300
+  echo "woken up!"
+  echo "Visit http://ci.greatnessdomain.xyz and use the following login credentials:
+  Username: admin
+  Password: $(kubectl get secret -n argo-cd argocd-secret -o jsonpath="{.data.clearPassword}" | base64 -d)"
+  echo "if link is not live, wait an additional 5 mins"
+}
 
 install_prerequisites
 start_minikube
@@ -130,4 +139,5 @@ update_redis_helm_values "redis-master"
 install_argo_cd
 deploy_helm_chart
 install_cloudflare_tunnel
+get_argocd_password
 echo "Script execution completed."
