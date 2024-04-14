@@ -5,10 +5,10 @@ image:
 resources:
   requests:
     memory: "64Mi"
-    cpu: "250m"
+    cpu: "100m"
   limits:
     memory: "128Mi"
-    cpu: "500m"
+    cpu: "200m"
 ingress:
   enabled: true
   host: deel-app.local
@@ -17,4 +17,4 @@ redis_password: MjByV1RWc1NZYg==
 service:
   type: ClusterIP
   port: 80
-replicaCount: 3
+replicaCount: 1
