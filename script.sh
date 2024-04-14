@@ -111,10 +111,6 @@ replicate_redis_secret(){
   kubectl patch secret redis -n redis -p '{"metadata": {"annotations": {"reflector.v1.k8s.emberstack.com/reflection-allowed": "true", "reflector.v1.k8s.emberstack.com/reflection-auto-enabled": "true", "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces": "staging"}}}'
 
 }
-deploy_helm_chart() {
-  helm install --create-namespace --namespace staging deel ./deel >/dev/null 2>&1  
-  echo "deel installed!"
-}
 get_argocd_password(){
   echo -e "sleeping for 5 minutes to get everything ready...\n"
   sleep 300
@@ -133,7 +129,6 @@ install_argo_cd
 kubectl create ns staging
 install_cloudflare_tunnel
 get_argocd_password
-deploy_helm_chart
 echo "done with deel"
 echo -e "Visit http://deel.greatnessdomain.xyz to see the deel application running.\n\n"
 echo "Script execution completed."
