@@ -1,6 +1,6 @@
 replicaCount: 1
 repository: great15/deel
-tag: latest
+tag: fcd022fe408fb11b319c6465518754ffb0980108
 resources:
   requests:
     memory: "64Mi"
