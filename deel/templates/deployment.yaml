@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.repository }}:{{ .Values.tag }}"
         ports:
         - containerPort: 80
         envFrom:

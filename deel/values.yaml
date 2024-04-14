@@ -1,7 +1,6 @@
-replicaCount: 3
-image:
-  repository: great15/deel
-  tag: latest
+replicaCount: 1
+repository: great15/deel
+tag: latest
 resources:
   requests:
     memory: "64Mi"
@@ -9,13 +8,8 @@ resources:
   limits:
     memory: "128Mi"
     cpu: "200m"
-ingress:
-  enabled: true
-  host: deel-app.local
 redis_host: redis-master.redis.svc.cluster.local
 redis_password: MjByV1RWc1NZYg==
 service:
   type: ClusterIP
   port: 80
-replicaCount: 1
-image.tag: 6df1bc97272c9e9455dd910653a1af5f9a0d1354

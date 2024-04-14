@@ -45,7 +45,7 @@ jobs:
 
     - name: Update Helm chart values
       run: |
-        KEY_TO_UPDATE="image.tag"
+        KEY_TO_UPDATE="tag"
         NEW_VALUE=${{ github.sha }}
 
         awk -v key="$KEY_TO_UPDATE" -v value="$NEW_VALUE" '
