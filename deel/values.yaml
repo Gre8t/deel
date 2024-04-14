@@ -18,3 +18,4 @@ service:
   type: ClusterIP
   port: 80
 replicaCount: 1
+image.tag: 6df1bc97272c9e9455dd910653a1af5f9a0d1354
