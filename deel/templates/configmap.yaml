@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-config
 data:
-  REDIS_HOST: {{ .Values.redis_host }}
+  REDIS_HOST: redis-master.redis.svc.cluster.local
   REDIS_PORT: "6379"

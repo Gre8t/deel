@@ -22,8 +22,12 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-config
-        - secretRef:
-            name: {{ .Release.Name }}-secret
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis
+              key: redis-password
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         livenessProbe:
