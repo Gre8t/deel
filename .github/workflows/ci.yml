@@ -35,3 +35,31 @@ jobs:
 
     - name: Push the Docker image to DockerHub
       run: docker push great15/deel:${{ github.sha }}
+  
+  update-chart-values:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Update Helm chart values
+      run: |
+        KEY_TO_UPDATE="image.tag"
+        NEW_VALUE=${{ github.sha }}
+
+        awk -v key="$KEY_TO_UPDATE" -v value="$NEW_VALUE" '
+          /^'"$KEY_TO_UPDATE"':/ { $2 = value; updated = 1 }
+          { print }
+          END { if (!updated) print key ": " value }
+        ' ./deel/values.yaml > ./deel/values.tmp.yaml && \
+        mv ./deel/values.tmp.yaml ./deel/values.yaml
+          
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        git add .
+        git commit -m "Update Helm chart value for image tag"
+        git push
