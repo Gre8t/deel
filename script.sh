@@ -106,18 +106,13 @@ install_helm() {
       ;;
   esac
 }
-update_redis_helm_values() {
-  local service_name="$1"
-  local redis_dns="${service_name}.${redis_namespace}.svc.cluster.local"
-  echo "Updating Helm chart values.yaml with Redis DNS: $redis_dns ..."
-  awk -v redis_dns="$redis_dns" '/redis_host:/ {$2=redis_dns} 1' deel/values.yaml > tmp.yaml && mv tmp.yaml deel/values.yaml
+replicate_redis_secret(){
+  kubectl apply -f https://github.com/emberstack/kubernetes-reflector/releases/latest/download/reflector.yaml
+  kubectl patch secret redis -n redis -p '{"metadata": {"annotations": {"reflector.v1.k8s.emberstack.com/reflection-allowed": "true", "reflector.v1.k8s.emberstack.com/reflection-auto-enabled": "true", "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces": "staging"}}}'
 
-  local redis_password=$(kubectl get secret -n $redis_namespace redis -o jsonpath="{.data.redis-password}")
-  echo "Updating Helm chart values.yaml with Redis password..."
-  awk -v redis_password="$redis_password" '/redis_password:/ {$2=redis_password} 1' deel/values.yaml > tmp.yaml && mv tmp.yaml deel/values.yaml
 }
 deploy_helm_chart() {
-  helm install --create-namespace --namespace staging deel ./deel >/dev/null 2>&1 
+  helm install --create-namespace --namespace staging deel ./deel >/dev/null 2>&1  
   echo "deel installed!"
 }
 get_argocd_password(){
@@ -125,7 +120,7 @@ get_argocd_password(){
   sleep 300
   echo -e "woken up! \n"
   echo -e "Visit http://ci.greatnessdomain.xyz and use the following login credentials: \nUsername: admin \nPassword: $(kubectl get secret -n argo-cd argocd-secret -o jsonpath="{.data.clearPassword}" | base64 -d)"
-  echo -e "if link is not live, wait an additional 5 mins...\n"
+  echo -e "\nif link is not live, wait an additional 5 mins...\n"
 }
 
 install_prerequisites
@@ -133,10 +128,12 @@ start_minikube
 install_redis
 install_falco
 install_prometheus
-update_redis_helm_values "redis-master"
+replicate_redis_secret
 install_argo_cd
-deploy_helm_chart
+kubectl create ns staging
 install_cloudflare_tunnel
 get_argocd_password
+deploy_helm_chart
+echo "done with deel"
 echo -e "Visit http://deel.greatnessdomain.xyz to see the deel application running.\n\n"
 echo "Script execution completed."
